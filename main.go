@@ -13,9 +13,10 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "gomove"
 	app.Usage = "Move Golang packages to a new path."
-	app.Version = "0.2.17"
+	app.Version = "0.2.18"
 	app.ArgsUsage = "[old path] [new path]"
 	app.Authors = append(app.Authors, &cli.Author{Name: "Kaushal Subedi", Email: "kaushal@subedi.co"})
+	app.Authors = append(app.Authors, &cli.Author{Name: "Greg Carter", Email: "greg_carter@comcast.com"})
 
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
@@ -88,7 +89,7 @@ func ScanDir(dir string, from string, to string, c *cli.Context) {
 // ProcessFile processes file according to what mode is chosen
 func ProcessFile(filePath string, from string, to string, c *cli.Context) {
 	if c.String("safe-mode") == "true" {
-		ProcessFileAST(filePath, from, to)
+		ProcessFileAST(filePath, from, to, c)
 	} else {
 		ProcessFileNative(filePath, from, to)
 	}

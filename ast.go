@@ -8,13 +8,16 @@ import (
 	"go/token"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/mgutz/ansi"
 	"golang.org/x/tools/go/ast/astutil"
+
+	"github.com/codegangsta/cli"
 )
 
 // ProcessFileAST processes the files using golang's AST parser
-func ProcessFileAST(filePath string, from string, to string) {
+func ProcessFileAST(filePath string, from string, to string, c *cli.Context) {
 
 	//Colors to be used on the console
 	red := ansi.ColorCode("red+bh")
@@ -36,18 +39,48 @@ func ProcessFileAST(filePath string, from string, to string) {
 		return
 	}
 
-	// Keep track of number of changes
+	// Keep track of whether changes were made.
 	changed := false
-	if changed = astutil.RewriteImport(fSet, file, from, to); changed {
-		fmt.Println(red +
-			"Updating import " +
-			reset + white +
-			from +
-			reset + red +
-			" to " +
-			reset + white +
-			to +
-			reset)
+
+	if c.String("prefix") == "true" {
+		// Our `from` and `to` are path prefixes. We need to scan the import paths
+		// ourselves looking for the old, `from` prefix and building the new path with the `to`
+		// prefix in order to do the import path rewrites.
+		importGroups := astutil.Imports(fSet, file)
+		for _, importGroup := range importGroups {
+			for _, importItem := range importGroup {
+				// Since astutil returns the path string with quotes, remove those
+				importString := strings.TrimSuffix(strings.TrimPrefix(importItem.Path.Value, "\""), "\"")
+
+				if strings.HasPrefix(importString, from) {
+					newImportString := to + strings.TrimPrefix(importString, from)
+
+					if changed = astutil.RewriteImport(fSet, file, importString, newImportString); changed {
+						fmt.Println(red +
+							"Updating import " +
+							reset + white +
+							importString +
+							reset + red +
+							" to " +
+							reset + white +
+							newImportString +
+							reset)
+					}
+				}
+			}
+		}
+	} else {
+		if changed = astutil.RewriteImport(fSet, file, from, to); changed {
+			fmt.Println(red +
+				"Updating import " +
+				reset + white +
+				from +
+				reset + red +
+				" to " +
+				reset + white +
+				to +
+				reset)
+		}
 	}
 
 	// If the number of changes are more than 0, write file

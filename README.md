@@ -28,6 +28,13 @@ You can also `cd` to the directory of `github.com/ksubedi/new-project` and run g
 You can also only replace the contents one file only by using `-f` or `--file` flag.
 
 	$ gomove -f hello.go github.com/bla/bla github.com/foo/bar
+	
+You can also have gomove search for and replace import path prefixes by using the `--prefix` flag. This option is only
+available if you also set `--safe-mode true`.
+
+In this example, we are moving all packages prefixed with `github.prototype.com/testbed` to `github.enterprise.com/production`.
+
+	$ gomove --safe-mode true --prefix true github.prototype.com/testbed github.enterprise.com/production
 
 You can also run `gomove --help` for help.
 	
@@ -39,20 +46,22 @@ You can also run `gomove --help` for help.
 	   gomove [global options] command [command options] [old path] [new path]
 	   
 	VERSION:
-	   0.2.17
+	   0.2.18
 	   
-	AUTHOR(S):
+	AUTHORS:
 	   Kaushal Subedi <kaushal@subedi.co> 
+	   Greg Carter <greg_carter@comcast.com>
 	   
 	COMMANDS:
 	   help, h	Shows a list of commands or help for one command
 	   
 	GLOBAL OPTIONS:
-	   --dir, -d "./"		directory to scan
-	   --file, -f 			only move imports in a file
-	   --safe-mode, -s "false"	run program in safe mode (comments will be wiped)
-	   --help, -h			show help
-	   --version, -v		print the version
+	   --dir value		directory to scan. files under vendor/ are ignored (default: "./")
+	   --file value		only move imports in a file
+	   --safe-mode value	run program in safe mode (comments will be wiped) (default: "false")
+	   --prefix value		interpret 'from' and 'to' arguments as import path prefixes rather than the entire paths (applies only to 'safe-mode') (default: "false")
+	   --help, -h			show help (default: false)
+	   --version, -v		print the version (default: false)
 
 
 Safe Mode
